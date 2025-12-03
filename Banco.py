@@ -20,10 +20,17 @@ while True:
     if opcao == "d":
         valor = float(input("Digite o valor que deseja depositar: "))
 
-        if valor > limite:
+        VALOR_POSITIVO = valor > 0
+
+        VALOR_DENTRO_DO_LIMITE = valor <= limite
+
+        if not VALOR_POSITIVO:
+            print("Digite apenas numeros acima de 0")
+
+        elif not VALOR_DENTRO_DO_LIMITE:
             print(f"Você pode depositar apenas R${limite} por deposito")
             
-        else:
+        elif VALOR_DENTRO_DO_LIMITE and VALOR_POSITIVO:
             saldo += valor
             extrato.append((valor, "Deposito"))
 
@@ -31,21 +38,30 @@ while True:
     elif opcao == "s":
         valor = float(input("Digite o valor que deseja sacar: "))
 
-        if valor > saldo:
+        SALDO_SUFICIENTE = valor < saldo
+
+        ATINGIU_LIMITE = numero_saques == LIMITE_SAQUES
+
+        if not SALDO_SUFICIENTE:
             print("Você não tem saldo suficiente")
 
-        elif numero_saques == LIMITE_SAQUES:
+        elif ATINGIU_LIMITE:
             print("Você atingiu o maximo de saques diario")
 
-        else:
+        elif SALDO_SUFICIENTE:
             saldo -= valor
             numero_saques += 1
             extrato.append((valor, "Saque"))
 
 
     elif opcao == "e":
+        if not extrato:
+            print("Nao foram encontrado extratos")
+
         for valor, status in extrato:
             print(f"R${valor:.2f} - {status}")
+
+        print(f"Saldo: R${saldo:.2f}")
 
     elif opcao == "q":
         break
