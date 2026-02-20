@@ -1,3 +1,103 @@
+class Conta:
+    def __init__(self, saldo: float, numero: str, agencia: str, cliente: Cliente):
+        self.saldo = saldo
+        self.numero = numero
+        self.agencia = agencia
+        self.cliente = cliente
+        self.extrato = []
+        self.LIMITE_SAQUES = 3
+        self.numero_saques = 0
+        self.limite = 500
+
+    def sacar(self, *, valor: float) -> bool:
+        SALDO_SUFICIENTE = valor <= self.saldo
+        ATINGIU_LIMITE = self.numero_saques == self.LIMITE_SAQUES
+
+        if not SALDO_SUFICIENTE:
+            print("Saldo insuficiente na sua conta")
+            return False
+        
+        if ATINGIU_LIMITE:
+            print("Você atingiu o limite de saques diarios, tente novamente amanhã")
+            return False
+
+        self.saldo -= valor
+        self.numero_saques += 1
+        self.extrato.append((valor, "Saque"))
+        return True
+
+
+    def depositar(self, valor: float, /) -> bool:
+        VALOR_POSITIVO = valor > 0
+
+        VALOR_DENTRO_DO_LIMITE = valor <= self.limite
+
+        if not VALOR_POSITIVO:
+            print("Digite apenas numeros acima de 0")
+            return False
+
+        if not VALOR_DENTRO_DO_LIMITE:
+            print(f"Você pode depositar apenas R${self.limite} por deposito")
+            return False
+            
+        self.saldo += valor
+        self.extrato.append((valor, "Deposito"))
+        return True
+
+    def ver_extrato(self):
+        if not self.extrato:
+            print("Nao foram encontrado extratos")
+            return False
+
+        for valor, status in self.extrato:
+            print(f"R${valor:.2f} - {status}")
+
+        print(f"Saldo: R${self.saldo:.2f}")
+
+class Cliente:
+    def __init__(self, endereço: str, cpf: str, nome: str, data_nascimento: str):
+        self.endereço = endereço
+        self.cpf = cpf
+        self.nome = nome,
+        self.data_nascimento = data_nascimento
+        self.contas = []
+
+
+
+    def criar_cliente(self, nome, nascimento, CPF, endereço, usuarios) -> bool:
+        for cliente, dados in usuarios.items():
+            if CPF == cliente:
+                print("Esse cpf ja está cadastrado")
+                return False
+        
+        usuarios[CPF] = {"nome": nome,
+                        "data_nascimento": nascimento,
+                        "endereço": endereço}
+        
+        print("Usuario cadastrado")
+        return True
+
+    def criar_conta_corrente(self, CPF, usuario, contas) -> bool: 
+        if CPF not in usuario:
+            print("Cpf nao encontrado na base de dados")
+            return False
+                
+        conta = str(len(contas) + 1)
+        AGENCIA = "-0001"
+
+        contas.append({"conta": conta + AGENCIA, "usuario": usuario[CPF]})
+        print("Conta criada com sucesso")
+        return True
+
+    def listar_contas(contas):
+        if not contas:
+            print("Nenhuma conta encontrada")
+            return False
+        
+        for i in contas:
+            print(f"Conta: {i['conta']} Cliente: {i['usuario']['nome']}")
+
+
 def menu():
     print( """
 
@@ -10,81 +110,6 @@ def menu():
     [q] Sair
 
     => """)
-
-def sacar(*, saldo, valor, numero_saques, limite_saques, extrato):
-    SALDO_SUFICIENTE = valor <= saldo
-    ATINGIU_LIMITE = numero_saques == limite_saques
-
-    if not SALDO_SUFICIENTE:
-        print("Saldo insuficiente na sua conta")
-        return
-    
-    if ATINGIU_LIMITE:
-        print("Você atingiu o limite de saques diarios, tente novamente amanhã")
-        return
-
-    saldo -= valor
-    numero_saques += 1
-    extrato.append((valor, "Saque"))
-    return saldo, numero_saques
-
-
-def depositar(saldo, valor, extrato, limite, /):
-    VALOR_POSITIVO = valor > 0
-
-    VALOR_DENTRO_DO_LIMITE = valor <= limite
-
-    if not VALOR_POSITIVO:
-        print("Digite apenas numeros acima de 0")
-        return
-
-    if not VALOR_DENTRO_DO_LIMITE:
-        print(f"Você pode depositar apenas R${limite} por deposito")
-        return
-        
-    saldo += valor
-    extrato.append((valor, "Deposito"))
-    return saldo
-
-def ver_extrato(saldo, /, *, extrato):
-    if not extrato:
-        print("Nao foram encontrado extratos")
-        return
-
-    for valor, status in extrato:
-        print(f"R${valor:.2f} - {status}")
-
-    print(f"Saldo: R${saldo:.2f}")
-
-    return
-
-def criar_cliente(nome, nascimento, CPF, endereço, usuarios):
-    for cliente, dados in usuarios.items():
-        if CPF == cliente:
-            print("Esse cpf ja está cadastrado")
-            return
-    
-    usuarios[CPF] = {"nome": nome,
-                     "data_nascimento": nascimento,
-                     "endereço": endereço}
-    
-    return print("Usuario cadastrado")
-
-def criar_conta_corrente(CPF, usuario, contas): 
-    if CPF not in usuario:
-        print("Cpf nao encontrado na base de dados")
-        return
-            
-    conta = str(len(contas) + 1)
-    AGENCIA = "-0001"
-
-    contas.append({"conta": conta + AGENCIA, "usuario": usuario[CPF]})
-    print("Conta criada com sucesso")
-
-def listar_contas(contas):
-    for i in contas:
-        print(f"Conta: {i['conta']} Cliente: {i['usuario']['nome']}")
-    
 
 def main():
     saldo = 0
