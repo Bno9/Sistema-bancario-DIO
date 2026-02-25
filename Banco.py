@@ -1,12 +1,24 @@
 from abc import ABC, abstractproperty, abstractclassmethod
 from datetime import datetime
 
+def log(func, nome_operacao):
+    def envelope(*args, **kwargs):
+        resultado = func(*args, **kwargs)
+        print(f"{func.__name__} realizada as {datetime.now().strftime("%d/%m/%Y %H:%M")}")
+        return resultado
+
+    return envelope
+
 class Cliente:
     def __init__(self, endereco):
         self.endereco = endereco
         self.contas = []
 
     def realizar_transacao(self, conta, transacao):
+        if len(conta.historico.transacoes_do_dia()) >= 10:
+            print("Você excedeu o numero de transações permitidas para hoje")
+            return
+        
         transacao.registrar(conta)
 
     def adicionar_conta(self, conta):
@@ -123,6 +135,21 @@ class Historico:
             "valor": transacao.valor,
             "data": datetime.now().strftime("%d/%m/%Y %H:%M")
          })
+        
+    def gerar_relatorio(self, tipo_transacao=None):
+        for transacao in self._transacoes:
+            if tipo_transacao is None or transacao["tipo"].lower() == tipo_transacao.lower():
+                yield transacao
+
+    def transacoes_do_dia(self):
+        data_atual = datetime.utcnow().date()
+        transacoes = []
+
+        for transacao in self._transacoes:
+            data_transacao = datetime.strptime(transacao["data"], "%d-%m-%Y %H:%M:%S").date()
+            if data_atual == data_transacao:
+                transacoes.append(transacao)
+        return transacoes
 
 class Transacao(ABC):
     @property
@@ -186,6 +213,7 @@ def recuperar_conta_cliente(cliente):
 
     return cliente.contas[0]
 
+@log
 def depositar(clientes):
     cpf = input("Digite o cpf do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
@@ -203,7 +231,7 @@ def depositar(clientes):
     
     cliente.realizar_transacao(conta, transacao)
 
-
+@log
 def sacar(clientes):
     cpf = input("Digite o cpf do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
@@ -221,6 +249,7 @@ def sacar(clientes):
     
     cliente.realizar_transacao(conta, transacao)
 
+@log
 def exibir_extrato(clientes):
     cpf = input("Informe o cpf do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
@@ -247,6 +276,7 @@ def exibir_extrato(clientes):
     print(extrato)
     print(f"Saldo R$ {conta.saldo:.2f}")
 
+@log
 def criar_clientes(clientes):
     nome = input("Digite o nome: ")
     data_nascimento = input("Digite a data de nascimento: ")
@@ -262,6 +292,7 @@ def criar_clientes(clientes):
     cliente = PessoaFisica(nome=nome, cpf=CPF, data_nascimento=data_nascimento, endereco=endereço)
     clientes.append(cliente)
 
+@log
 def criar_conta(clientes, numero_conta, contas):
     cpf = input("Informe o cpf do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
