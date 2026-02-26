@@ -1,14 +1,22 @@
 from abc import ABC, abstractproperty, abstractclassmethod
 from datetime import datetime
+from pathlib import Path
+
+ROOT_PATH = Path(__file__).parent
+
 
 def log(nome_operacao):
     def decorator(func):
         def envelope(*args, **kwargs):
+            data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
             resultado = func(*args, **kwargs)
-            print(f"{func.__name__} realizada as {datetime.now().strftime("%d/%m/%Y %H:%M")}")
+            with open(ROOT_PATH / "log.txt", "a") as arquivo:
+                arquivo.write(
+                f"{data_hora} Função {func.__name__} executada com argumentos {args} e {kwargs}. Retornou {resultado}\n"
+                )
             return resultado
-
         return envelope
+    return decorator
 
 class ContasIterador:
     def __init__(self, contas):
